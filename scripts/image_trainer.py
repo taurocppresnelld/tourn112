@@ -606,7 +606,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                 print(f"Loss count: {loss_count}", flush=True)
                 print(f"Loss loop: {loss_loop}", flush=True)
 
-                if loss_count >= 7:
+                if loss_count >= 4:
                     docker_maxi = False
                     docker_failed = False
 
@@ -648,7 +648,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                 docker_config,
                 expected_repo_name,
                 hours_to_complete,
-                is_warmup=True,
+                is_warmup=False,
                 level=docker_level[idx],
                 batch=dummy_batch,
                 seq=docker_seq[bdx],
