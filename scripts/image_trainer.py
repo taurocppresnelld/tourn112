@@ -232,6 +232,8 @@ def create_config(task_id, model, model_type, addconfig, expected_repo_name=None
         
         config['max_train_steps'] = int(my_warmup_min/runtime)
 
+        config['gradient_accumulation_steps'] = 4
+
         print(f"Final time {format_seconds(my_warmup_min)}", flush=True)
 
     print(f"max_train_steps: {config['max_train_steps']}", flush=True)
@@ -277,6 +279,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
     docker_unet_lrate = 0.001
     last_unet_lrate = 0.001
     best_unet_lrate = 0.001
+    docker_gradient = 16
     docker_runtime = 10
     docker_config = {}
     docker_loss = 1
@@ -341,6 +344,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
 
                     docker_lrate = config['learning_rate']
                     docker_unet_lrate = config['unet_lr']
+                    docker_gradient = config['gradient_accumulation_steps']
 
                     # training_command = [
                     #     "accelerate", "launch",
@@ -445,6 +449,12 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                             idx = idx + 1
                             if idx >= len(docker_level):
                                 idx = len(docker_level)-1
+
+                        docker_gradient = int(docker_gradient*0.5)
+                        if docker_gradient < 1:
+                            docker_gradient = 1
+                        docker_config['gradient_accumulation_steps'] = docker_gradient
+
                         docker_failed = True
                     elif "Insufficientshared" in docker_error:
                         print("Training subprocess Insufficientshared!", flush=True)
@@ -456,6 +466,12 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                             idx = idx + 1
                             if idx >= len(docker_level):
                                 idx = len(docker_level)-1
+
+                        docker_gradient = int(docker_gradient*0.5)
+                        if docker_gradient < 1:
+                            docker_gradient = 1
+                        docker_config['gradient_accumulation_steps'] = docker_gradient
+
                         docker_failed = True
                     elif "Signalskill" in docker_error:
                         print("Training subprocess Signalskill!", flush=True)
@@ -467,6 +483,12 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                             idx = idx + 1
                             if idx >= len(docker_level):
                                 idx = len(docker_level)-1
+
+                        docker_gradient = int(docker_gradient*0.5)
+                        if docker_gradient < 1:
+                            docker_gradient = 1
+                        docker_config['gradient_accumulation_steps'] = docker_gradient
+
                         docker_failed = True
                     elif "Cachingisincompatible" in docker_error:
                         print("Training subprocess Cachingisincompatible!", flush=True)
@@ -606,7 +628,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                 print(f"Loss count: {loss_count}", flush=True)
                 print(f"Loss loop: {loss_loop}", flush=True)
 
-                if loss_count >= 4:
+                if loss_count >= 3:
                     docker_maxi = False
                     docker_failed = False
 
@@ -779,6 +801,12 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                         idx = idx + 1
                         if idx >= len(docker_level):
                             idx = len(docker_level)-1
+
+                    docker_gradient = int(docker_gradient*0.5)
+                    if docker_gradient < 1:
+                        docker_gradient = 1
+                    docker_config['gradient_accumulation_steps'] = docker_gradient
+
                     docker_failed = True
                 elif "Insufficientshared" in docker_error:
                     print("Training subprocess Insufficientshared!", flush=True)
@@ -790,6 +818,12 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                         idx = idx + 1
                         if idx >= len(docker_level):
                             idx = len(docker_level)-1
+
+                    docker_gradient = int(docker_gradient*0.5)
+                    if docker_gradient < 1:
+                        docker_gradient = 1
+                    docker_config['gradient_accumulation_steps'] = docker_gradient
+
                     docker_failed = True
                 elif "Signalskill" in docker_error:
                     print("Training subprocess Signalskill!", flush=True)
@@ -801,6 +835,12 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                         idx = idx + 1
                         if idx >= len(docker_level):
                             idx = len(docker_level)-1
+
+                    docker_gradient = int(docker_gradient*0.5)
+                    if docker_gradient < 1:
+                        docker_gradient = 1
+                    docker_config['gradient_accumulation_steps'] = docker_gradient
+
                     docker_failed = True
                 elif "Cachingisincompatible" in docker_error:
                     print("Training subprocess Cachingisincompatible!", flush=True)
